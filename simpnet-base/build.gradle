@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group = 'me.gb2022.simpnet'
+version = '1.0-SNAPSHOT'
+
+apply from: "../gbuild.gradle"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly gbuildLib("me.gb2022.commons:commons-math")
+    compileOnly 'io.netty:netty-all:4.1.100.Final'
+}
+
+publish_gbuild()
