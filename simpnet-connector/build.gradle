@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+apply from:"../base.gradle"
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform()
+}
