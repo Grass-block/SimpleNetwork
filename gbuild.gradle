@@ -1,5 +1,8 @@
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.text.SimpleDateFormat
+
+//mklink /H gbuild.gradle E:\Java\GBuild\gbuild.gradle
 
 def GBUILD_WORKSPACE = "E:/Java/GBuild"
 
@@ -8,8 +11,8 @@ project.ext.jitpackRepo = { return project.repositories.maven { name = 'jitpack-
 project.ext.spigotmcRepo = { return project.repositories.maven { name = 'spigotmc-repo'; url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" } }
 project.ext.papermcRepo = { return project.repositories.maven { name = 'papermc-repo'; url = 'https://repo.papermc.io/repository/maven-public/' } }
 project.ext.sonatypeRepo = { return project.repositories.maven { name = "sonatype"; url = "https://oss.sonatype.org/content/groups/public/" } }
+project.ext.papiRepo = { return project.repositories.maven { name = "placeholder-api"; url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/' } }
 
-//dependencies:
 project.ext.projectLib = { lib -> return files("${rootDir.getAbsolutePath()}/libraries/${lib}.jar") }
 project.ext.localStorage = { lib -> return files("E:/Java/GlobalResources/Libraries/${lib.replace(".", "/")}.jar") }
 project.ext.gbuildLib = { lib ->
@@ -29,17 +32,34 @@ project.ext.gbuildLib = { lib ->
         local.getParentFile().mkdirs()
         local.createNewFile()
         Files.copy(remote.toPath(), local.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        print("Downloaded lib ${lib} (${remote.lastModified()} > ${local.lastModified()})")
+        println("Downloaded lib ${lib} (${remote.lastModified()} > ${local.lastModified()})")
         return files(local_path)
     }
 
     if (remote.lastModified() > local.lastModified() || remote.length() != local.length()) {
-        print("Updating lib ${lib} (${remote.lastModified()} > ${local.lastModified()})")
+        println("Updating lib ${lib} (${remote.lastModified()} > ${local.lastModified()})")
         Files.copy(remote.toPath(), local.toPath(), StandardCopyOption.REPLACE_EXISTING)
     }
 
     return files(local_path)
 }
+
+project.ext.setJavaCompatibility = { version ->
+    project.compileJava.sourceCompatibility = version
+    project.compileJava.targetCompatibility = version
+}
+
+project.ext.publish_gbuild = {
+    project.tasks.register('GBuild Publish', Copy) {
+        from jar.archiveFile
+        into file("${GBUILD_WORKSPACE}/Libraries/${project.group}")
+    }
+
+    project.build.dependsOn 'GBuild Publish'
+}
+
+
+//dependencies:
 
 
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
@@ -60,6 +80,20 @@ project.ext.publish_gbuild = {
     }
 
     project.build.dependsOn 'GBuild Publish'
+}
+
+project.ext.publish_output = {
+    project.tasks.register('Output Publish', Copy) {
+        from jar.archiveFile
+        into file(rootProject.getProjectDir().getAbsolutePath() + "/productions")
+    }
+
+    project.build.dependsOn 'Output Publish'
+}
+
+
+project.ext.buildTime = {
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
 }
 
 
